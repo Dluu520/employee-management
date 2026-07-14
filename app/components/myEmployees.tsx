@@ -1,21 +1,35 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Toast from "./Toast";
 
 interface Employee {
   _id: string;
   email: string;
   username: string;
   password: string;
+  role: "admin" | "manager" | "employee";
+  employeeInfo: {
+    firstName: string;
+    lastName: string;
+    department: string;
+    position: string;
+    salary: number;
+    hireDate: string;
+    phone: string;
+  };
+  permissions: {
+    canEditEmployees: boolean;
+    canDeleteEmployees: boolean;
+    canViewPayroll: boolean;
+  };
+  status: "active" | "inactive";
   createdAt: string;
   updatedAt: string;
 }
-// This component manages employee data, with functions to add, delete, and update employees
-const MyEmployees = () => {
-  // Development purpose API
-  // const myEmployee = "http://localhost:3000/api/users"; // Your MongoDB endpoint
-  const myEmployee =
-    "https://employees-restful-api-example.vercel.app/api/users";
+
+const MyEmployees: React.FC = () => {
+  const apiPath = "/api/users";
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,117 +38,227 @@ const MyEmployees = () => {
     email: "",
     username: "",
     password: "",
+    role: "employee",
+    firstName: "",
+    lastName: "",
+    department: "",
+    position: "",
+    salary: "0",
+    hireDate: new Date().toISOString().slice(0, 10),
+    phone: "",
+    canEditEmployees: false,
+    canDeleteEmployees: false,
+    canViewPayroll: false,
+    status: "active",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type?: "success" | "error";
+  } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Fetch employees from MongoDB
+  const fetchEmployees = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(apiPath);
+      const data = await res.json();
+      const normalized = data.map((emp: any) => ({
+        ...emp,
+        role: emp.role ?? "employee",
+        employeeInfo: {
+          firstName: "",
+          lastName: "",
+          department: "",
+          position: "",
+          salary: 0,
+          hireDate: new Date().toISOString(),
+          phone: "",
+          ...(emp.employeeInfo || {}),
+        },
+        permissions: {
+          canEditEmployees: false,
+          canDeleteEmployees: false,
+          canViewPayroll: false,
+          ...(emp.permissions || {}),
+        },
+        status: emp.status ?? "active",
+      }));
+      setEmployees(normalized);
+      setFilteredEmployees(normalized);
+    } catch (e) {
+      setError("Failed to fetch employees");
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchEmployees = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(myEmployee);
-        const data = await response.json();
-        console.log("API Response:", data); // Log the response
-        setEmployees(data);
-        setFilteredEmployees(data);
-      } catch (err) {
-        setError("Failed to fetch employees");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchEmployees();
   }, []);
 
-  // Handle search/filter
   useEffect(() => {
-    const filtered = employees.filter(
-      (employee) =>
-        employee?._id?.toString().includes(searchTerm) ||
-        employee?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+    const normalized = searchTerm.toLowerCase();
+    const filtered = employees.filter((emp) =>
+      emp._id.toLowerCase().includes(normalized) ||
+      emp.email.toLowerCase().includes(normalized) ||
+      emp.username.toLowerCase().includes(normalized) ||
+      emp.role.toLowerCase().includes(normalized) ||
+      emp.employeeInfo.firstName.toLowerCase().includes(normalized) ||
+      emp.employeeInfo.lastName.toLowerCase().includes(normalized) ||
+      emp.employeeInfo.department.toLowerCase().includes(normalized) ||
+      emp.employeeInfo.position.toLowerCase().includes(normalized) ||
+      emp.status.toLowerCase().includes(normalized),
     );
     setFilteredEmployees(filtered);
   }, [searchTerm, employees]);
 
-  // Handle input change for new employee
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewEmployee({ ...newEmployee, [name]: value });
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setError(null);
   };
 
-  // Handle form submission for adding a new employee
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    const fieldValue = type === "checkbox" ? checked : value;
+    setNewEmployee((prev) => ({ ...prev, [name]: fieldValue }));
+  };
+
+  const isEmailValid = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isEmailValid(newEmployee.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (newEmployee.username.trim().length < 3) {
+      setError("Username must be at least 3 characters.");
+      return;
+    }
+    if (!newEmployee.firstName.trim() || !newEmployee.lastName.trim()) {
+      setError("Please enter first name and last name.");
+      return;
+    }
+
+    setError(null);
+
+    const payload = {
+      email: newEmployee.email,
+      username: newEmployee.username,
+      password: newEmployee.password,
+      role: newEmployee.role,
+      employeeInfo: {
+        firstName: newEmployee.firstName,
+        lastName: newEmployee.lastName,
+        department: newEmployee.department,
+        position: newEmployee.position,
+        salary: Number(newEmployee.salary),
+        hireDate: new Date(newEmployee.hireDate).toISOString(),
+        phone: newEmployee.phone,
+      },
+      permissions: {
+        canEditEmployees: newEmployee.canEditEmployees,
+        canDeleteEmployees: newEmployee.canDeleteEmployees,
+        canViewPayroll: newEmployee.canViewPayroll,
+      },
+      status: newEmployee.status,
+    };
+
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Employee = {
+      _id: tempId,
+      email: newEmployee.email,
+      username: newEmployee.username,
+      password: newEmployee.password,
+      role: newEmployee.role as "admin" | "manager" | "employee",
+      employeeInfo: {
+        firstName: newEmployee.firstName,
+        lastName: newEmployee.lastName,
+        department: newEmployee.department,
+        position: newEmployee.position,
+        salary: Number(newEmployee.salary),
+        hireDate: new Date(newEmployee.hireDate).toISOString(),
+        phone: newEmployee.phone,
+      },
+      permissions: {
+        canEditEmployees: newEmployee.canEditEmployees,
+        canDeleteEmployees: newEmployee.canDeleteEmployees,
+        canViewPayroll: newEmployee.canViewPayroll,
+      },
+      status: newEmployee.status as "active" | "inactive",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setEmployees((p) => [optimistic, ...p]);
+    setFilteredEmployees((p) => [optimistic, ...p]);
+
     try {
-      const response = await fetch(myEmployee, {
+      const res = await fetch(apiPath, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEmployee),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        alert(
-          "Failed to add employee. The email, and or username listed had aready been registered."
-        );
-        throw new Error("Failed to add employee");
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        setEmployees((p) => p.filter((x) => x._id !== tempId));
+        setFilteredEmployees((p) => p.filter((x) => x._id !== tempId));
+        setError("Failed to add employee: " + (text || res.status));
+        setToast({ message: "Failed to add employee", type: "error" });
+        return;
       }
 
-      const data = await response.json();
-      console.log("API Response after adding employee:", data);
-
-      // Update state with the new employee
-      setEmployees((prevEmployees) => [...prevEmployees, data]);
-      setFilteredEmployees((prevEmployees) => [...prevEmployees, data]);
-
-      // Close the modal and reset the form
-      setIsModalOpen(false);
-      setNewEmployee({ email: "", username: "", password: "" });
-
-      // Re-fetch employees to ensure the component reflects the latest data
-      const fetchEmployees = async () => {
-        setIsLoading(true);
-        try {
-          const response = await fetch(myEmployee);
-          const data = await response.json();
-          setEmployees(data);
-          setFilteredEmployees(data);
-        } catch (err) {
-          setError("Failed to fetch employees");
-          console.error(err);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
       await fetchEmployees();
+      setToast({ message: "Employee added", type: "success" });
+      closeModal();
+      setNewEmployee({
+        email: "",
+        username: "",
+        password: "",
+        role: "employee",
+        firstName: "",
+        lastName: "",
+        department: "",
+        position: "",
+        salary: "0",
+        hireDate: new Date().toISOString().slice(0, 10),
+        phone: "",
+        canEditEmployees: false,
+        canDeleteEmployees: false,
+        canViewPayroll: false,
+        status: "active",
+      });
     } catch (err) {
       setError("Failed to add employee");
+      setToast({ message: "Failed to add employee", type: "error" });
       console.error(err);
     }
   };
 
-  // Handle employee deletion
+  const confirmDelete = (id: string) => setDeletingId(id);
+  const cancelDelete = () => setDeletingId(null);
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this employee?")) return;
-
     try {
-      const response = await fetch(`${myEmployee}?userId=${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete employee");
+      const res = await fetch(`${apiPath}?userId=${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        setToast({
+          message: "Failed to delete: " + (text || res.status),
+          type: "error",
+        });
+        return;
       }
-
-      setEmployees(employees.filter((employee) => employee._id !== id));
-      setFilteredEmployees(
-        filteredEmployees.filter((employee) => employee._id !== id)
-      );
+      setEmployees((p) => p.filter((x) => x._id !== id));
+      setFilteredEmployees((p) => p.filter((x) => x._id !== id));
+      setToast({ message: "Employee deleted", type: "success" });
+      setDeletingId(null);
     } catch (err) {
       setError("Failed to delete employee");
       console.error(err);
@@ -143,118 +267,308 @@ const MyEmployees = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -100 }}
+      initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100 }}
-      className="flex flex-col p-4 bg-white rounded-lg shadow-lg h-full shadow-black"
+      exit={{ opacity: 0, x: 20 }}
+      className="flex flex-col p-4 bg-[var(--card)] rounded-lg shadow h-full"
     >
-      {/* Search Bar */}
-      <h1>
-        MongoDB Restful API - Create, Read, Update, Delete functionalities
-      </h1>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-lg font-semibold">Employee Management</h1>
+          <div className="text-sm muted">MongoDB RESTful CRUD</div>
+        </div>
+        <div>
+          <button
+            onClick={openModal}
+            className="px-3 py-1 bg-[var(--accent)] text-white rounded-md"
+          >
+            New Employee
+          </button>
+        </div>
+      </div>
+
       <input
-        type="text"
-        placeholder="Search by ID, Email, or Username"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="p-2 mb-4 border border-gray-300 rounded-md"
+        placeholder="Search by ID, Email, Username, Role, or Status"
+        className="p-2 mb-4 border border-[var(--border)] rounded-md bg-white text-[var(--foreground)]"
       />
 
-      {/* Employee Table */}
       <div className="overflow-y-auto flex-grow">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-[var(--border)]">
               <th className="p-2 text-left">ID</th>
+              <th className="p-2 text-left">Name</th>
               <th className="p-2 text-left">Email</th>
               <th className="p-2 text-left">Username</th>
-              <th className="p-2 text-left">Password</th>
-              <th className="p-2 text-left">Created At</th>
-              <th className="p-2 text-left">Updated At</th>
+              <th className="p-2 text-left">Role</th>
+              <th className="p-2 text-left">Department</th>
+              <th className="p-2 text-left">Position</th>
+              <th className="p-2 text-left">Status</th>
+              <th className="p-2 text-left">Hire Date</th>
               <th className="p-2 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredEmployees.map((employee, index) => (
-              <tr key={index} className="border-b">
-                <td className="p-2">{employee._id}</td>
-                <td className="p-2">{employee.email}</td>
-                <td className="p-2">{employee.username}</td>
-                <td className="p-2">{employee.password}</td>
-                <td className="p-2">
-                  {new Date(employee.createdAt).toLocaleString()}
-                </td>
-                <td className="p-2">
-                  {new Date(employee.updatedAt).toLocaleString()}
-                </td>
-                <td className="p-2">
-                  <button
-                    onClick={() => handleDelete(employee._id)}
-                    className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {filteredEmployees.map((emp) => {
+              const info = emp.employeeInfo || {
+                firstName: "",
+                lastName: "",
+                department: "",
+                position: "",
+                salary: 0,
+                hireDate: new Date().toISOString(),
+                phone: "",
+              };
+
+              return (
+                <tr key={emp._id} className="border-b">
+                  <td className="p-2 text-sm">{emp._id}</td>
+                  <td className="p-2 text-sm">{`${info.firstName || "—"} ${info.lastName || ""}`.trim() || "—"}</td>
+                  <td className="p-2 text-sm">{emp.email}</td>
+                  <td className="p-2 text-sm">{emp.username}</td>
+                  <td className="p-2 text-sm capitalize">{emp.role || "employee"}</td>
+                  <td className="p-2 text-sm">{info.department || "—"}</td>
+                  <td className="p-2 text-sm">{info.position || "—"}</td>
+                  <td className="p-2 text-sm capitalize">{emp.status || "active"}</td>
+                  <td className="p-2 text-sm">{new Date(info.hireDate).toLocaleDateString()}</td>
+                  <td className="p-2">
+                    {deletingId === emp._id ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="px-2 py-1 bg-red-600 text-white rounded"
+                          onClick={() => handleDelete(emp._id)}
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          className="px-2 py-1 bg-gray-200 rounded"
+                          onClick={cancelDelete}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                        onClick={() => confirmDelete(emp._id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {/* Add Employee Button */}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mt-4 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-      >
-        Add Employee
-      </button>
-
-      {/* Add Employee Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg w-[400px]">
-            <h2 className="text-xl font-bold mb-4">Add New Employee</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 px-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-employee-title"
+            className="bg-[var(--card)] text-[var(--foreground)] p-6 rounded-lg w-full max-w-xl shadow-lg"
+          >
+            <h2 id="add-employee-title" className="text-xl font-semibold mb-2">
+              Add New Employee
+            </h2>
+            <p className="text-sm muted mb-4">
+              Enter details to create a new employee.
+            </p>
+            {error && <div className="text-sm text-red-600 mb-2">{error}</div>}
             <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={newEmployee.email}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-                <input
-                  type="text"
-                  name="username"
-                  placeholder="Username"
-                  value={newEmployee.username}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={newEmployee.password}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="Jamie"
+                    value={newEmployee.firstName}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="Smith"
+                    value={newEmployee.lastName}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="name@company.com"
+                    value={newEmployee.email}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Username</label>
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="jdoe"
+                    value={newEmployee.username}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={newEmployee.password}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Role</label>
+                  <select
+                    name="role"
+                    value={newEmployee.role}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  >
+                    <option value="employee">Employee</option>
+                    <option value="manager">Manager</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Department</label>
+                  <input
+                    type="text"
+                    name="department"
+                    placeholder="Engineering"
+                    value={newEmployee.department}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Position</label>
+                  <input
+                    type="text"
+                    name="position"
+                    placeholder="Software Engineer"
+                    value={newEmployee.position}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Salary</label>
+                  <input
+                    type="number"
+                    name="salary"
+                    placeholder="75000"
+                    value={newEmployee.salary}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Hire Date</label>
+                  <input
+                    type="date"
+                    name="hireDate"
+                    value={newEmployee.hireDate}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="(555) 123-4567"
+                    value={newEmployee.phone}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <fieldset className="grid grid-cols-1 gap-2 rounded-md border border-[var(--border)] p-3">
+                    <legend className="text-sm font-medium">Permissions</legend>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="canEditEmployees"
+                        checked={newEmployee.canEditEmployees}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                      />
+                      Can edit employees
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="canDeleteEmployees"
+                        checked={newEmployee.canDeleteEmployees}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                      />
+                      Can delete employees
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="canViewPayroll"
+                        checked={newEmployee.canViewPayroll}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                      />
+                      Can view payroll
+                    </label>
+                  </fieldset>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Status</label>
+                  <select
+                    name="status"
+                    value={newEmployee.status}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
               </div>
-              <div className="mt-6 flex justify-end space-x-4">
+
+              <div className="mt-6 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 bg-gray-300 rounded-md hover:bg-gray-400"
+                  onClick={closeModal}
+                  className="px-3 py-1 bg-transparent border border-[var(--border)] text-[var(--foreground)] rounded-md"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  className="px-3 py-1 bg-[var(--accent)] text-white rounded-md"
                 >
                   Add
                 </button>
@@ -264,9 +578,15 @@ const MyEmployees = () => {
         </div>
       )}
 
-      {/* Loading and Error Messages */}
       {isLoading && <div className="mt-4 text-center">Loading...</div>}
       {error && <div className="mt-4 text-center text-red-500">{error}</div>}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </motion.div>
   );
 };

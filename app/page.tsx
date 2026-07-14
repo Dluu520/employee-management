@@ -1,57 +1,32 @@
 "use client";
-import Link from "next/link";
-import MyEmployees from "./components/myEmployees";
-import EmployeeList from "./components/employees";
-// import CoinAPI from "./components/coin";
-// import Todos from "./components/todo";
-import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import DashboardStats from "./components/DashboardStats";
+import ActivityFeed from "./components/ActivityFeed";
 
-const Home: React.FC = () => {
-  const [showComponentA, setShowComponentA] = useState<boolean>(true);
-
-  // Function to toggle between components
-  const toggleComponent = () => {
-    setShowComponentA((prev) => !prev);
-  };
+export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen p-10 bg-blue-950 gap-10">
-      {/* Button to toggle between components */}
-      <button
-        onClick={toggleComponent}
-        className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
-      >
-        {showComponentA
-          ? "Switch to sample employee list"
-          : "Switch to CRUD example"}
-      </button>{" "}
-      <div className="mb-8">
-        {/* Use AnimatePresence to handle exit animations */}
-        <AnimatePresence mode="wait">
-          {showComponentA ? (
-            <MyEmployees key="A" />
-          ) : (
-            <EmployeeList apiEndpoint="https://dummyjson.com/users" key="B" />
-          )}
-        </AnimatePresence>
-      </div>
-      {/* <div className="text-white ">
-        <Link
-          className="bg-cyan-800 hover:bg-cyan-400 p-4 "
-          href="/EmployeeList"
-        >
-          Switch To Sample Employee List Management Simulator
-        </Link>
-      </div> */}
-      {/* <h1 className="text-white">Employee List Management System Simulator</h1> */}
-      {/* ======================for employee API example ================= */}
-      {/* <MyEmployees />
-      <EmployeeList apiEndpoint="https://dummyjson.com/users" /> */}
-      {/* ToDos API example */}
-      {/* <Todos /> */}
-      {/* ======================for bitcoin API example ================= */}
-      {/* <CoinAPI /> */}
+    <div className="space-y-6">
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Welcome back!</h1>
+          <p className="text-sm muted">Overview of your organization</p>
+        </div>
+      </header>
+
+      <section>
+        <DashboardStats />
+      </section>
+
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="card">
+            <h3 className="font-medium mb-4">Employee Growth</h3>
+            <div className="h-48 bg-gradient-to-r from-[var(--accent)] to-[var(--primary)]/40 rounded"></div>
+          </div>
+        </div>
+        <div>
+          <ActivityFeed />
+        </div>
+      </section>
     </div>
   );
-};
-export default Home;
+}

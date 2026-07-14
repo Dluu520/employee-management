@@ -61,7 +61,7 @@ const EmployeeList = ({ apiEndpoint }: EmployeeListProps) => {
         employee.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         employee.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         employee.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.department.toLowerCase().includes(searchTerm.toLowerCase())
+        employee.department.toLowerCase().includes(searchTerm.toLowerCase()),
     );
     setFilteredEmployees(filtered);
   }, [searchTerm, employees]);
@@ -74,20 +74,22 @@ const EmployeeList = ({ apiEndpoint }: EmployeeListProps) => {
       className="flex flex-col p-4 bg-white rounded-lg shadow-lg h-2/3 shadow-black"
     >
       {/* Search Bar */}
-      <h1>Dummyjson public API endpoint - Filter simulation</h1>
+      <h1 className="text-lg font-semibold text-black">
+        Dummyjson public API endpoint - Filter simulation
+      </h1>
       <input
         type="text"
         placeholder="Search by ID, Name, Position, or Department. Example: Support"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="p-2 mb-4 border border-gray-300 rounded-md"
+        className="p-2 mb-4 border border-gray-300 rounded-md text-black"
       />
 
       {/* Employee Table */}
-      <div className="overflow-y-auto flex-grow">
+      <div className="overflow-y-auto flex-grow card text-[var(--foreground)]">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="">
               <th className="p-2 text-left">ID</th>
               <th className="p-2 text-left">First Name</th>
               <th className="p-2 text-left">Last Name</th>
