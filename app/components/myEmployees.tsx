@@ -101,16 +101,17 @@ const MyEmployees: React.FC = () => {
 
   useEffect(() => {
     const normalized = searchTerm.toLowerCase();
-    const filtered = employees.filter((emp) =>
-      emp._id.toLowerCase().includes(normalized) ||
-      emp.email.toLowerCase().includes(normalized) ||
-      emp.username.toLowerCase().includes(normalized) ||
-      emp.role.toLowerCase().includes(normalized) ||
-      emp.employeeInfo.firstName.toLowerCase().includes(normalized) ||
-      emp.employeeInfo.lastName.toLowerCase().includes(normalized) ||
-      emp.employeeInfo.department.toLowerCase().includes(normalized) ||
-      emp.employeeInfo.position.toLowerCase().includes(normalized) ||
-      emp.status.toLowerCase().includes(normalized),
+    const filtered = employees.filter(
+      (emp) =>
+        emp._id.toLowerCase().includes(normalized) ||
+        emp.email.toLowerCase().includes(normalized) ||
+        emp.username.toLowerCase().includes(normalized) ||
+        emp.role.toLowerCase().includes(normalized) ||
+        emp.employeeInfo.firstName.toLowerCase().includes(normalized) ||
+        emp.employeeInfo.lastName.toLowerCase().includes(normalized) ||
+        emp.employeeInfo.department.toLowerCase().includes(normalized) ||
+        emp.employeeInfo.position.toLowerCase().includes(normalized) ||
+        emp.status.toLowerCase().includes(normalized),
     );
     setFilteredEmployees(filtered);
   }, [searchTerm, employees]);
@@ -121,7 +122,9 @@ const MyEmployees: React.FC = () => {
     setError(null);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     const fieldValue = type === "checkbox" ? checked : value;
     setNewEmployee((prev) => ({ ...prev, [name]: fieldValue }));
@@ -325,14 +328,23 @@ const MyEmployees: React.FC = () => {
               return (
                 <tr key={emp._id} className="border-b">
                   <td className="p-2 text-sm">{emp._id}</td>
-                  <td className="p-2 text-sm">{`${info.firstName || "—"} ${info.lastName || ""}`.trim() || "—"}</td>
+                  <td className="p-2 text-sm">
+                    {`${info.firstName || "—"} ${info.lastName || ""}`.trim() ||
+                      "—"}
+                  </td>
                   <td className="p-2 text-sm">{emp.email}</td>
                   <td className="p-2 text-sm">{emp.username}</td>
-                  <td className="p-2 text-sm capitalize">{emp.role || "employee"}</td>
+                  <td className="p-2 text-sm capitalize">
+                    {emp.role || "employee"}
+                  </td>
                   <td className="p-2 text-sm">{info.department || "—"}</td>
                   <td className="p-2 text-sm">{info.position || "—"}</td>
-                  <td className="p-2 text-sm capitalize">{emp.status || "active"}</td>
-                  <td className="p-2 text-sm">{new Date(info.hireDate).toLocaleDateString()}</td>
+                  <td className="p-2 text-sm capitalize">
+                    {emp.status || "active"}
+                  </td>
+                  <td className="p-2 text-sm">
+                    {new Date(info.hireDate).toLocaleDateString()}
+                  </td>
                   <td className="p-2">
                     {deletingId === emp._id ? (
                       <div className="flex items-center gap-2">

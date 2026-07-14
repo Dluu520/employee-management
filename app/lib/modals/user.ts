@@ -30,7 +30,7 @@ const UserSchema = new Schema(
       default: "active",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = models.User || model("User", UserSchema);
