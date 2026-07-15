@@ -273,17 +273,21 @@ const MyEmployees: React.FC = () => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="flex flex-col p-4 bg-[var(--card)] rounded-lg shadow h-full"
+      className="flex flex-col p-4 bg-(--card) rounded-lg shadow h-full"
     >
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-lg font-semibold">Employee Management</h1>
-          <div className="text-sm muted">MongoDB RESTful CRUD</div>
+          <div className="text-sm muted">
+            Feel free to create new employees, search by name or department, and
+            remove users. All data is stored in MongoDB using a RESTful API
+            built with Next.js and TypeScript.
+          </div>
         </div>
         <div>
           <button
             onClick={openModal}
-            className="px-3 py-1 bg-[var(--accent)] text-white rounded-md"
+            className="px-3 py-1 bg-(--accent) text-white rounded-md"
           >
             New Employee
           </button>
@@ -294,13 +298,13 @@ const MyEmployees: React.FC = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Search by ID, Email, Username, Role, or Status"
-        className="p-2 mb-4 border border-[var(--border)] rounded-md bg-white text-[var(--foreground)]"
+        className="p-2 mb-4 border border-(--border) rounded-md bg-white text-black"
       />
 
-      <div className="overflow-y-auto flex-grow">
-        <table className="w-full">
+      <div className="overflow-y-auto grow ">
+        <table className="w-full ">
           <thead>
-            <tr className="bg-[var(--border)]">
+            <tr className="">
               <th className="p-2 text-left">ID</th>
               <th className="p-2 text-left">Name</th>
               <th className="p-2 text-left">Email</th>
@@ -344,8 +348,14 @@ const MyEmployees: React.FC = () => {
                   </td>
                   <td className="p-2 text-sm">
                     {new Date(info.hireDate).toLocaleDateString()}
-                  </td>
+                  </td>{" "}
                   <td className="p-2">
+                    {/* <button
+                      onClick={() => handleEdit(emp)}
+                      className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Edit
+                    </button>{" "} */}
                     {deletingId === emp._id ? (
                       <div className="flex items-center gap-2">
                         <button
@@ -383,7 +393,7 @@ const MyEmployees: React.FC = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-employee-title"
-            className="bg-[var(--card)] text-[var(--foreground)] p-6 rounded-lg w-full max-w-xl shadow-lg"
+            className="bg-(--card) text-(--foreground) p-6 rounded-lg w-full max-w-xl shadow-lg"
           >
             <h2 id="add-employee-title" className="text-xl font-semibold mb-2">
               Add New Employee
@@ -402,7 +412,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="Jamie"
                     value={newEmployee.firstName}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                     required
                   />
                 </div>
@@ -414,7 +424,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="Smith"
                     value={newEmployee.lastName}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                     required
                   />
                 </div>
@@ -426,7 +436,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="name@company.com"
                     value={newEmployee.email}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                     required
                   />
                 </div>
@@ -438,7 +448,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="jdoe"
                     value={newEmployee.username}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                     required
                   />
                 </div>
@@ -450,7 +460,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="••••••••"
                     value={newEmployee.password}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                     required
                   />
                 </div>
@@ -460,7 +470,7 @@ const MyEmployees: React.FC = () => {
                     name="role"
                     value={newEmployee.role}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                   >
                     <option value="employee">Employee</option>
                     <option value="manager">Manager</option>
@@ -475,7 +485,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="Engineering"
                     value={newEmployee.department}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                   />
                 </div>
                 <div>
@@ -486,7 +496,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="Software Engineer"
                     value={newEmployee.position}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                   />
                 </div>
                 <div>
@@ -497,7 +507,7 @@ const MyEmployees: React.FC = () => {
                     placeholder="75000"
                     value={newEmployee.salary}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                   />
                 </div>
                 <div>
@@ -507,7 +517,7 @@ const MyEmployees: React.FC = () => {
                     name="hireDate"
                     value={newEmployee.hireDate}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                   />
                 </div>
                 <div>
@@ -518,11 +528,11 @@ const MyEmployees: React.FC = () => {
                     placeholder="(555) 123-4567"
                     value={newEmployee.phone}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <fieldset className="grid grid-cols-1 gap-2 rounded-md border border-[var(--border)] p-3">
+                  <fieldset className="grid grid-cols-1 gap-2 rounded-md border border-(--border) p-3">
                     <legend className="text-sm font-medium">Permissions</legend>
                     <label className="inline-flex items-center gap-2">
                       <input
@@ -530,7 +540,7 @@ const MyEmployees: React.FC = () => {
                         name="canEditEmployees"
                         checked={newEmployee.canEditEmployees}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                        className="h-4 w-4 rounded border-(--border) focus:ring-(--accent)"
                       />
                       Can edit employees
                     </label>
@@ -540,7 +550,7 @@ const MyEmployees: React.FC = () => {
                         name="canDeleteEmployees"
                         checked={newEmployee.canDeleteEmployees}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                        className="h-4 w-4 rounded border-(--border) focus:ring-(--accent)"
                       />
                       Can delete employees
                     </label>
@@ -550,7 +560,7 @@ const MyEmployees: React.FC = () => {
                         name="canViewPayroll"
                         checked={newEmployee.canViewPayroll}
                         onChange={handleInputChange}
-                        className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                        className="h-4 w-4 rounded border-(--border) focus:ring-(--accent)"
                       />
                       Can view payroll
                     </label>
@@ -562,7 +572,7 @@ const MyEmployees: React.FC = () => {
                     name="status"
                     value={newEmployee.status}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-[var(--border)] bg-white text-[var(--foreground)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    className="w-full p-2 border border-(--border) bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-(--accent)"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -574,13 +584,13 @@ const MyEmployees: React.FC = () => {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-3 py-1 bg-transparent border border-[var(--border)] text-[var(--foreground)] rounded-md"
+                  className="px-3 py-1 bg-transparent border border-(--border) text-(--foreground) rounded-md"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1 bg-[var(--accent)] text-white rounded-md"
+                  className="px-3 py-1 bg-(--accent) text-white rounded-md"
                 >
                   Add
                 </button>

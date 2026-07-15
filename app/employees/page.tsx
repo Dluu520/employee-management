@@ -11,7 +11,9 @@ export default function EmployeesPage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Employees</h1>
-          <p className="text-sm muted">Manage your organization users</p>
+          <p className="text-sm muted">
+            Manage employee records, departments, and user information.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="bg-white/6 p-1 rounded flex items-center">
