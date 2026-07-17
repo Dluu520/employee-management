@@ -1,5 +1,10 @@
 # Employee Management System
 
+
+
+Live Demo: https://employees-management-platform.vercel.app/
+
+
 A full-stack employee management platform built with **Next.js, TypeScript, Tailwind CSS, and MongoDB**.  
 
 The application provides HR-focused tools for managing employees, tracking payroll information, and viewing workforce analytics through a modern dashboard interface.
@@ -83,13 +88,13 @@ The application provides HR-focused tools for managing employees, tracking payro
 # Screenshots
 
 ## Dashboard
-
+https://employees-management-platform.vercel.app/
 <img width="1915" height="825" alt="image" src="https://github.com/user-attachments/assets/7ffc6e9a-9300-4def-9f12-784961ef005a" />
 
 ---
 
 ## Employee Management
-
+https://employees-management-platform.vercel.app/
 <img width="1889" height="784" alt="image" src="https://github.com/user-attachments/assets/d4defdb5-e07f-4ca6-9385-4d9b0c785d2a" />
 
 
