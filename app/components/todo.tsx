@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 // Base API URLs for various requests
-const baseUrl = "https://jsonplaceholder.typicode.com";
+const baseUrl = "https://jsonplaceholder.typicode.com/"; // Base URL for fetching todos
 interface Post {
+  userId: number;
   id: number;
   title: string;
+  completed: boolean;
 }
 // This component fetches and displays a list of todos
 export default function Todos() {
@@ -20,6 +22,7 @@ export default function Todos() {
       setIsLoading(true);
       try {
         const response = await fetch(`${baseUrl}/todos`);
+        // grabs the todos example list here.
         const data = (await response.json()) as Post[];
         setTodos(data);
       } catch (e: any) {
@@ -38,13 +41,14 @@ export default function Todos() {
         <div className="flex h-screen p-20">loading data....</div>
       ) : (
         <ul className="h-full w-full overflow-scroll list-disc pl-5 border border-black ">
-          {todos.map(post => {
+          {todos.map((post) => {
             return (
               <li className="" key={post.id}>
                 {post.title}
               </li>
             );
           })}
+          s
         </ul>
       )}
     </div>

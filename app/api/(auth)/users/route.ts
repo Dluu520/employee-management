@@ -6,9 +6,25 @@ import { Types } from "mongoose"; // Importing Types from mongoose for handling 
 // Define the structure of the User type
 interface UserType {
   _id: Types.ObjectId;
-  username: string;
   email: string;
+  username: string;
   password: string;
+  role: string;
+  employeeInfo: {
+    firstName: string;
+    lastName: string;
+    department: string;
+    position: string;
+    salary: number;
+    hireDate: Date;
+    phone: string;
+  };
+  permissions: {
+    canEditEmployees: boolean;
+    canDeleteEmployees: boolean;
+    canViewPayroll: boolean;
+  };
+  status: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,7 +62,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
     // Return a success response with the new user data
     return new NextResponse(
       JSON.stringify({ message: "User is created", user: newUser }),
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: unknown) {
     // Handle errors
@@ -70,7 +86,7 @@ export const PATCH = async (request: NextRequest): Promise<NextResponse> => {
     if (!userId || !newUserName) {
       return new NextResponse(
         JSON.stringify({ message: "ID or new username not found" }),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -87,7 +103,7 @@ export const PATCH = async (request: NextRequest): Promise<NextResponse> => {
         _id: new Types.ObjectId(userId), // Ensure the userId is valid as a MongoDB ObjectId
       },
       { username: newUserName, password: newUserPassword, email: newUserEmail },
-      { new: true } // 'new: true' ensures we get the updated user object
+      { new: true }, // 'new: true' ensures we get the updated user object
     );
 
     // Check if the user was found and updated
@@ -96,14 +112,14 @@ export const PATCH = async (request: NextRequest): Promise<NextResponse> => {
         JSON.stringify({ message: "User not found in database" }),
         {
           status: 400,
-        }
+        },
       );
     }
 
     // Return a success response with the updated user data
     return new NextResponse(
       JSON.stringify({ message: "User is updated", user: updatedUser }),
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: unknown) {
     // Handle errors
@@ -125,7 +141,7 @@ export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
     if (!userId) {
       return new NextResponse(
         JSON.stringify({ message: "Cannot find user Id" }),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -141,7 +157,7 @@ export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
 
     // Attempt to find and delete the user by their ObjectId
     const deletedUser = await User.findByIdAndDelete(
-      new Types.ObjectId(userId)
+      new Types.ObjectId(userId),
     );
 
     // If no user is found or deleted, return an error
@@ -150,7 +166,7 @@ export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
         JSON.stringify({
           message: "Error while deleting user. User not found.",
         }),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -159,7 +175,7 @@ export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
       JSON.stringify({ message: "User is deleted", user: deletedUser }),
       {
         status: 200,
-      }
+      },
     );
   } catch (error: unknown) {
     // Handle errors

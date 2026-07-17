@@ -19,7 +19,7 @@ export default function Sidebar() {
     { label: "Employees", href: "/employees", live: true },
     { label: "Departments", href: "#", live: false },
     { label: "Attendance", href: "#", live: false },
-    { label: "Payroll", href: "#", live: false },
+    { label: "Payroll", href: "/payroll", live: true },
     { label: "Reports", href: "#", live: false },
   ];
 
